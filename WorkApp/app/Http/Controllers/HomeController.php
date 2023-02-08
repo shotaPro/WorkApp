@@ -229,8 +229,8 @@ class HomeController extends Controller
 
         //メール送信処理
         $mail_data = [
-            'recipient' => '9688wpva@gmail.com',
-            'fromEmail' => '9688wpva@gmail.com',
+            'recipient' => 'test@gmail.com',
+            'fromEmail' => 'test@gmail.com',
             'fromName' => 'work_App_admin',
             'subject' => 'This is test email',
             'body' => $request->work_consult
