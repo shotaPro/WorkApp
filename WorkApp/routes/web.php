@@ -51,4 +51,5 @@ Route::get('/user_order_consult_page/{id}', [HomeController::class, 'user_order_
 Route::get('/select_order_consult_work_category/{id}', [HomeController::class, 'select_order_consult_work_category']);
 Route::post('/send_order_consult_work_message/{id}', [HomeController::class, 'send_order_consult_work_message']);
 Route::get('/email-template', [HomeController::class, 'email-template']);
+Route::get('/message_list_page', [HomeController::class, 'message_list_page']);
 

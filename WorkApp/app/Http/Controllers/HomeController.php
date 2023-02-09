@@ -40,7 +40,6 @@ class HomeController extends Controller
             $notification_info = Notification::Where('notificationTo', '=', $user_id)->Where('status', '=', NULL)->get();
 
             return view('user.home', compact('notification_info'));
-
         } else {
 
             return view('admin.home');
@@ -236,12 +235,18 @@ class HomeController extends Controller
             'body' => $request->work_consult
         ];
 
-        Mail::send('email-template', $mail_data, function($message) use ($mail_data){
+        Mail::send('email-template', $mail_data, function ($message) use ($mail_data) {
             $message->to($mail_data['recipient'])->from($mail_data['fromEmail'], $mail_data['fromName'])->subject($mail_data['subject']);
         });
 
         return redirect()->back()->with('message', '送信が完了しました。返事が来るまでお待ちください。');
+    }
 
+    public function message_list_page()
+    {
+        $user_id = Auth::user()->id;
+        $receive_message_list = Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')->where('receiver_id', '=', $user_id)->get();
+        return view('user.message_list_page', compact('receive_message_list'));
 
     }
 }

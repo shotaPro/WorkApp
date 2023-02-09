@@ -85,7 +85,7 @@
                                 <a class="nav-link" href="{{ url('worker_list_page') }}"role="button">
                                     新しいワーカーを探す
                                 </a>
-                                <a class="nav-link news" role="button" href="#">通知
+                                <a class="nav-link news" role="button" href="{{ url('message_list_page') }}">通知
                                     @if($notification_info->isNotEmpty())
                                     <span class="notice">{{ count($notification_info) }}</span>
                                     @endif
