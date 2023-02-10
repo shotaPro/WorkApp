@@ -244,9 +244,23 @@ class HomeController extends Controller
 
     public function message_list_page()
     {
+
         $user_id = Auth::user()->id;
         $receive_message_list = Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')->where('receiver_id', '=', $user_id)->get();
+        $unread_notification_info = notification::where('notificationTo', '=', $user_id)->where('status', '=', NULL)->update(['status' => 1]);
+
         return view('user.message_list_page', compact('receive_message_list'));
+    }
+
+    public function detail_consult_message(Request $request, $id)
+    {
+        $sender_id = $request->sender_id;
+        $receiver_id = $request->receiver_id;
+        $work_id = $id;
+
+        $detail_message_info = work_consult_message::Where('receiver_id', '=', $receiver_id)->Where('sender_id', '=', $request->sender_id)->Where('work_id', '=', $work_id)->first();
+
+        return view('user.detail_consult_message', compact('detail_message_info'));
 
     }
 }
