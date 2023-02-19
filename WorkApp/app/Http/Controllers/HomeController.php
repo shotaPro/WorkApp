@@ -266,18 +266,31 @@ class HomeController extends Controller
     {
         $user_id = Auth::user()->id;
         $sender_id = $request->sender_id;
+        $sender_id = (int)$sender_id;
         $receiver_id = $request->receiver_id;
         $message_id = $id;
 
+
         ////////////////////////////////////////////////////////////////////////
-        ///送信者の情報は固定
+        ///最初の相談メッセージの送信者の情報は固定
         ////////////////////////////////
-        $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-        ->Where('work_consult_messages.sender_id', '=', $user_id)
-        ->Where('work_consult_messages.id', '=', $message_id)
-        ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
-        ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
-        ->first();
+        if($sender_id != $user_id){
+            $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+            ->Where('work_consult_messages.sender_id', '=', $user_id)
+            ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+            ->Where('work_consult_messages.id', '=', $message_id)
+            ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+            ->first();
+
+        }else {
+            $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+            ->Where('work_consult_messages.sender_id', '=', $user_id)
+            ->Where('work_consult_messages.id', '=', $message_id)
+            ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+            ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+            ->first();
+        }
+
         ////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////
