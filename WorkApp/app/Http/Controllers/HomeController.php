@@ -12,7 +12,8 @@ use App\Models\Work_consult_message;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotify;
-
+use Illuminate\Support\Facades\Redirect;
+use App\Models\Reply_message;
 
 class HomeController extends Controller
 {
@@ -103,14 +104,15 @@ class HomeController extends Controller
         $edit_profile_data = User::find($id);
 
         $edit_profile_data->user_name = $request->name;
-        $edit_profile_data->image = $request->image;
+        $image = $request->image;
 
-        if ($edit_profile_data->image != NULL) {
+        if ($image != NULL) {
 
-            $imagename = time() . '.' . $edit_profile_data->getClientOriginalExtension();
+            $imagename = time() . '.' . $image->getClientOriginalExtension();
             $request->image->move('profile_picture', $imagename);
             $edit_profile_data->image = $imagename;
         }
+
         $edit_profile_data->profile_text = $request->profile_text;
         $edit_profile_data->skill = $request->skill;
 
@@ -246,21 +248,91 @@ class HomeController extends Controller
     {
 
         $user_id = Auth::user()->id;
-        $receive_message_list = Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')->where('receiver_id', '=', $user_id)->get();
+
+        $receive_message_list = Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+        ->Where('work_consult_messages.sender_id', '=', $user_id)
+        ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+        ->select('work_consult_messages.id', 'users.user_name', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+        ->get();
+
         $unread_notification_info = notification::where('notificationTo', '=', $user_id)->where('status', '=', NULL)->update(['status' => 1]);
 
+
         return view('user.message_list_page', compact('receive_message_list'));
+
     }
 
     public function detail_consult_message(Request $request, $id)
     {
+        $user_id = Auth::user()->id;
         $sender_id = $request->sender_id;
         $receiver_id = $request->receiver_id;
-        $work_id = $id;
+        $message_id = $id;
 
-        $detail_message_info = work_consult_message::Where('receiver_id', '=', $receiver_id)->Where('sender_id', '=', $request->sender_id)->Where('work_id', '=', $work_id)->first();
+        ////////////////////////////////////////////////////////////////////////
+        ///送信者の情報は固定
+        ////////////////////////////////
+        $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+        ->Where('work_consult_messages.sender_id', '=', $user_id)
+        ->Where('work_consult_messages.id', '=', $message_id)
+        ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+        ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+        ->first();
+        ////////////////////////////////////////////////////////////////
 
-        return view('user.detail_consult_message', compact('detail_message_info'));
+        ////////////////////////////////////////////////////////////////
+        ///返信メッセージ取得
+        ////////////////////////////////////////////////////////////////
+        $reply_message = Reply_message::join('users', 'users.id', 'reply_messages.replyBy_id')
+        ->Where('reply_id', '=', $message_id)
+        ->get();
+
+
+        return view('user.detail_consult_message', compact('sender_info', 'reply_message'));
+
+    }
+
+    public function reply_consult_message(Request $request, $id)
+    {
+
+        $user_id = Auth::user()->id;
+        $message_id = $id;
+        $messageFrom_user_id = $request->input('messageFrom_user_id');
+
+        $request->validate([
+            'reply_message' => 'required',
+        ], [
+            'reply_message.required' => 'メッセージが入力されていません。',
+        ]);
+
+        ////////////////////////////////////////////////////////////////
+        //reply_messageにデータを挿入
+        ////////////////////////////////////////////////////////////////
+        $reply_message = new Reply_Message();
+        $reply_message->reply_id = $message_id;
+        $reply_message->reply_message = $request->reply_message;
+        $reply_message->replyBy_id = $user_id;
+        ////////////////////////////////////////////////////////////////////////
+
+        /////////////////////////////
+        //通知機能反映処理
+        //////////////////////////////
+        $notification_info = new Notification();
+        $notification_info->notificationFrom = $user_id;
+        $notification_info->notificationTo = $messageFrom_user_id;
+        ////////////////////////////////////////////////////////////////
+
+        $reply_message->save();
+        $notification_info->save();
+
+        // $detail_message_receiver_info = work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')->Where('receiver_id', '=', $messageFrom_user_id)->Where('sender_id', '=', $user_id)->Where('work_id', '=', $id)->get();
+        $reply_message = reply_message::join('work_consult_messages', 'work_consult_messages.id', 'reply_messages.reply_id')
+        ->join('users', 'users.id', 'work_consult_messages.receiver_id')
+        ->Where('work_consult_messages.id', '=', $message_id)
+        ->Where('users.id', '=', $user_id)
+        ->get();
+
+        return redirect()->back()->with('reply_info', $reply_message);
 
     }
 }

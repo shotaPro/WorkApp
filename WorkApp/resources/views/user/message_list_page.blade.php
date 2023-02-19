@@ -242,17 +242,19 @@
                         <div class="card" style="width: 18rem;">
                             <img src="..." class="card-img-top" alt="...">
                             <div class="card-body">
-                                <h5 class="card-title">相談者：{{ $list->user_name }}</h5>
+                                <h5 class="card-title">{{ $list->user_name }}</h5>
                                 <p class="card-text">{{ $list->consult_message }}</p>
-                                <a href="{{ url('detail_consult_message', $list->work_id) }}/?sender_id={{ $list->sender_id }}/&&receiver_id={{ $list->receiver_id }}" class="btn btn-primary">詳細を見る</a>
+                                <a href="{{ url('detail_consult_message', $list->id) }}/?sender_id={{ $list->sender_id }}/&&receiver_id={{ $list->receiver_id }}" class="btn btn-primary">詳細を見る</a>
                             </div>
                         </div>
                         @endforeach
+                        @if($receive_message_list->isEmpty())
+                            <h3>通知はありません。</h3>
+                        @endif
                     </div>
                     <!-- Sale & Revenue End -->
                 </div>
-                <!-- Content End -->›
-
+                <!-- Content End -->
 
             </div>
 

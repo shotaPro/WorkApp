@@ -53,4 +53,5 @@ Route::post('/send_order_consult_work_message/{id}', [HomeController::class, 'se
 Route::get('/email-template', [HomeController::class, 'email-template']);
 Route::get('/message_list_page', [HomeController::class, 'message_list_page']);
 Route::get('/detail_consult_message/{id}', [HomeController::class, 'detail_consult_message']);
+Route::post('/reply_consult_message/{id}', [HomeController::class, 'reply_consult_message']);
 

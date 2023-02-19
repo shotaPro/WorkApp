@@ -122,8 +122,7 @@
                             <div class="col-lg-4">
                                 <div class="card mb-4">
                                     <div class="card-body text-center">
-                                        <img src="/profile_picture/{{ $profile_data["image"] }}"
-                                            alt="avatar" class="rounded-circle img-fluid" style="width: 150px;">
+                                        <img src="/profile_picture/{{ $profile_data["image"] }}" class="rounded-circle img-fluid" style="width: 150px;">
                                         <h5 class="my-3">{{ $profile_data["user_name"] }}</h5>
                                         <p class="text-muted mb-1">未設定</p>
                                         <p class="text-muted mb-4">未設定</p>
