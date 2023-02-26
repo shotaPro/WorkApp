@@ -44,4 +44,9 @@ class User extends Authenticatable
 
     public $timestamps = false;
 
+
+    public function work()
+    {
+        return $this->hasMany(Work::class, 'users.id', 'works.order_person_id');
+    }
 }

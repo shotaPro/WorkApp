@@ -199,70 +199,50 @@
         <main class="py-4">
             <div class="container-xxl position-relative bg-white d-flex p-0">
 
-                <!-- Sidebar Start -->
-                <div class="sidebar pe-4 pb-3">
-                    <nav class="navbar bg-light navbar-light">
-                        <a href="index.html" class="navbar-brand mx-4 mb-3">
-                            <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
-                        </a>
-                        <div class="d-flex align-items-center ms-4 mb-4">
-                            <div class="position-relative">
-                                <img class="rounded-circle" src="img/user.jpg" alt=""
-                                    style="width: 40px; height: 40px;">
-                                <div
-                                    class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1">
-                                </div>
-                            </div>
-                            <div class="ms-3">
-                                <h6 class="mb-0">Jhon Doe</h6>
-                                <span>Admin</span>
-                            </div>
-                        </div>
-                        <div class="navbar-nav w-100">
-
-                            <div class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i
-                                        class="far fa-file-alt me-2"></i></a>
-                                <div class="dropdown-menu bg-transparent border-0">
-                                    <a href="" class="dropdown-item"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
-                </div>
-                <!-- Sidebar End -->
-
-
                 <!-- Content Start -->
                 <div class="content mx-auto">
-                    <div style="margin-bottom: 30px;">
-                        <p>絞り込み検索</p>
-                        <a href="" class="btn btn-primary">全て</a>
-                        <a href="" class="btn btn-primary">応募・スカウト</a>
-                    </div>
 
                     <!-- Sale & Revenue Start -->
                     <div class="container-fluid ml-6">
-                        @foreach($receive_message_list as $list)
-                        <div class="card" style="width: 18rem;">
-                            @if($list->task_id != NULL)
-                                <span class="text-right">応募・スカウト</span>
-                            @endif
-                            <img src="" class="card-img-top" alt="...">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ $list->user_name }}</h5>
-                                <p class="card-text">{{ $list->consult_message }}</p>
-                                <a href="{{ url('detail_consult_message', $list->id) }}/?sender_id={{ $list->sender_id }}/&&receiver_id={{ $list->receiver_id }}/&&task_id={{ $list->task_id }}" class="btn btn-primary">詳細を見る</a>
+                        <h1>仕事詳細画面</h1>
+                        <form class="d-flex">
+                            <input style="width: 80%" class="" type="search" placeholder="キーワードで探す"
+                                aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">検索</button><br>
+                        </form>
+
+                            <div class="card" style="margin-top:20px;">
+                                <div class="card-body">
+                                    <div style="display: flex">
+                                        <img style="height: 40px; width: 40px;"
+                                            src="/profile_picture/{{ $work_detail_info->image }}" class=""
+                                            alt="...">
+                                        <h4 style="margin-left: 20px">{{ $work_detail_info->user_name }}</h4>
+                                    </div>
+                                    <h5 class="card-title">{{ $work_detail_info['work_title'] }}</h5>
+                                    <p class="card-text">{{ $work_detail_info['work_contents'] }}</p>
+                                    <h5>報酬額</h5>
+                                    <p class="card-text">{{ $work_detail_info['rewards'] }}円</p>
+                                    <h5>応募数</h5>
+                                    <p class="card-text">
+                                        @if($work_detail_info['apply_number'] == NULL)
+                                        0
+                                        @else
+
+                                        @endif
+                                    </p>
+                                    @if($apply_flg == NULL)
+                                    <a href="{{ url('apply_job_page', $work_detail_info['id']) }}" class="btn btn-primary">応募画面へ</a>
+                                    @else
+                                    <a href="#" class="btn btn-light">応募済み</a>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                        @endforeach
-                        @if($receive_message_list->isEmpty())
-                            <h3>通知はありません。</h3>
-                        @endif
                     </div>
                     <!-- Sale & Revenue End -->
                 </div>
                 <!-- Content End -->
+
 
             </div>
 
@@ -286,7 +266,35 @@
                 integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
             </script>
 
+            <script>
+                const receiver_btn = document.getElementById('receiver_btn');
+                const order_btn = document.getElementById('order_btn');
+                const receiverMenu = document.getElementById('receiver_menu');
+                const orderMenu = document.getElementById('order_menu');
 
+                console.log(receiver_btn, order_btn, receiverMenu, orderMenu);
+
+                receiver_btn.addEventListener('click', function(e) {
+
+                    e.preventDefault();
+                    receiverMenu.style.cssText = 'display: none !important';
+
+                    orderMenu.style.display = null;
+                    orderMenu.style.display = 'block';
+
+
+                })
+
+                order_btn.addEventListener('click', function(e) {
+
+                    e.preventDefault();
+                    orderMenu.style.cssText = 'display: none !important';
+
+                    receiverMenu.style.display = null;
+                    receiverMenu.style.display = 'block';
+
+                })
+            </script>
 </body>
 
 </html>

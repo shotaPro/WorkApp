@@ -54,4 +54,8 @@ Route::get('/email-template', [HomeController::class, 'email-template']);
 Route::get('/message_list_page', [HomeController::class, 'message_list_page']);
 Route::get('/detail_consult_message/{id}', [HomeController::class, 'detail_consult_message']);
 Route::post('/reply_consult_message/{id}', [HomeController::class, 'reply_consult_message']);
+Route::get('/work_detail_info_page/{id}', [HomeController::class, 'work_detail_info_page']);
+Route::get('/apply_job_page/{id}', [HomeController::class, 'apply_job_page']);
+Route::post('/apply_job/{id}', [HomeController::class, 'apply_job']);
+Route::post('/choose_applicant', [HomeController::class, 'choose_applicant']);
 

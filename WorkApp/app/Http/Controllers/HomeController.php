@@ -167,13 +167,6 @@ class HomeController extends Controller
         return redirect()->back()->with("message", "仕事掲載の登録が正常に完了しました。");
     }
 
-    public function recruit_work_page()
-    {
-        $work_info = Work::all();
-
-        return view('user.recruit_work_page', compact('work_info'));
-    }
-
     public function worker_list_page()
     {
         $users = User::Where('id', '!=', 1)->get();
@@ -250,16 +243,15 @@ class HomeController extends Controller
         $user_id = Auth::user()->id;
 
         $receive_message_list = Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-        ->Where('work_consult_messages.sender_id', '=', $user_id)
-        ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
-        ->select('work_consult_messages.id', 'users.user_name', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
-        ->get();
+            ->Where('work_consult_messages.sender_id', '=', $user_id)
+            ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+            ->select('work_consult_messages.id', 'users.user_name', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
+            ->get();
 
         $unread_notification_info = notification::where('notificationTo', '=', $user_id)->where('status', '=', NULL)->update(['status' => 1]);
 
 
         return view('user.message_list_page', compact('receive_message_list'));
-
     }
 
     public function detail_consult_message(Request $request, $id)
@@ -268,41 +260,81 @@ class HomeController extends Controller
         $sender_id = $request->sender_id;
         $sender_id = (int)$sender_id;
         $receiver_id = $request->receiver_id;
+        $task_id = $request->task_id;
         $message_id = $id;
+        $work_info = Work_consult_message::find($message_id);
+        $job_recruit_info = Work::find($work_info->task_id);
+
+        if ($work_info->message_status == 1) {
+            //応募ページのからの送信の場合は以下を実行
 
 
-        ////////////////////////////////////////////////////////////////////////
-        ///最初の相談メッセージの送信者の情報は固定
-        ////////////////////////////////
-        if($sender_id != $user_id){
-            $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-            ->Where('work_consult_messages.sender_id', '=', $user_id)
-            ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
-            ->Where('work_consult_messages.id', '=', $message_id)
-            ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
-            ->first();
+            ////////////////////////////////////////////////////////////////////////
+            ///最初の相談メッセージの送信者の情報は固定
+            ////////////////////////////////
+            if ($sender_id == $user_id) {
 
-        }else {
-            $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-            ->Where('work_consult_messages.sender_id', '=', $user_id)
-            ->Where('work_consult_messages.id', '=', $message_id)
-            ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
-            ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
-            ->first();
+                $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->join('works', 'works.id', 'work_consult_messages.task_id')
+                    ->Where('work_consult_messages.task_id', '=', $task_id)
+                    ->Where('work_consult_messages.sender_id', '=', $user_id)
+                    ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+                    ->Where('work_consult_messages.id', '=', $message_id)
+                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
+                    ->first();
+            } else {
+
+                $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->Where('work_consult_messages.sender_id', '=', $user_id)
+                    ->Where('work_consult_messages.id', '=', $message_id)
+                    ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
+                    ->first();
+            }
+        } else {
+
+            //応募ページ以外からの場合は以下を実行
+
+            ////////////////////////////////////////////////////////////////////////
+            ///最初の相談メッセージの送信者の情報は固定
+            ////////////////////////////////
+            if ($sender_id != $user_id) {
+
+                $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->Where('work_consult_messages.sender_id', '=', $user_id)
+                    ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+                    ->Where('work_consult_messages.id', '=', $message_id)
+                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+                    ->first();
+            } else {
+
+                $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->Where('work_consult_messages.sender_id', '=', $user_id)
+                    ->Where('work_consult_messages.id', '=', $message_id)
+                    ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+                    ->first();
+            }
         }
-
         ////////////////////////////////////////////////////////////////
+
+
 
         ////////////////////////////////////////////////////////////////
         ///返信メッセージ取得
         ////////////////////////////////////////////////////////////////
         $reply_message = Reply_message::join('users', 'users.id', 'reply_messages.replyBy_id')
-        ->Where('reply_id', '=', $message_id)
-        ->get();
+            ->Where('reply_id', '=', $message_id)
+            ->get();
 
+        if ($work_info->message_status == 1) {
 
-        return view('user.detail_consult_message', compact('sender_info', 'reply_message'));
+            return view('user.detail_consult_message', compact('sender_info', 'reply_message', 'job_recruit_info'));
+        } else {
 
+            $job_recruit_info = NULL;
+            return view('user.detail_consult_message', compact('sender_info', 'reply_message', 'job_recruit_info'));
+        }
     }
 
     public function reply_consult_message(Request $request, $id)
@@ -338,14 +370,175 @@ class HomeController extends Controller
         $reply_message->save();
         $notification_info->save();
 
-        // $detail_message_receiver_info = work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')->Where('receiver_id', '=', $messageFrom_user_id)->Where('sender_id', '=', $user_id)->Where('work_id', '=', $id)->get();
         $reply_message = reply_message::join('work_consult_messages', 'work_consult_messages.id', 'reply_messages.reply_id')
-        ->join('users', 'users.id', 'work_consult_messages.receiver_id')
-        ->Where('work_consult_messages.id', '=', $message_id)
-        ->Where('users.id', '=', $user_id)
-        ->get();
+            ->join('users', 'users.id', 'work_consult_messages.receiver_id')
+            ->Where('work_consult_messages.id', '=', $message_id)
+            ->Where('users.id', '=', $user_id)
+            ->get();
 
         return redirect()->back()->with('reply_info', $reply_message);
+    }
+
+    public function recruit_work_page()
+    {
+        $work_data = Work::all();
+        $work_info = array();
+
+        foreach ($work_data as $data) {
+            $work_info[] = Work::join('users', 'users.id', 'works.order_person_id')
+                ->Where('works.order_person_id', '=', $data->order_person_id)
+                ->select('works.id', 'works.work_title', 'works.work_contents', 'works.apply_number', 'works.rewards', 'users.user_name', 'users.image')
+                ->get();
+        }
+
+
+        return view('user.recruit_work_page', compact('work_info'));
+    }
+
+    public function work_detail_info_page($id)
+    {
+        $user_id = Auth::user()->id;
+        $work_detail_info = work::find($id);
+        $work_detail_info = Work::join('users', 'users.id', 'works.order_person_id')
+            ->Where('works.order_person_id', '=', $work_detail_info->order_person_id)
+            ->Where('works.id', '=', $id)
+            ->select('works.id', 'works.work_title', 'works.work_contents', 'works.apply_number', 'works.rewards', 'users.user_name', 'users.image')
+            ->first();
+
+        ////////////////////////////////////////////////////////////////
+        //応募済みフラグ追加
+        ////////////////////////////////////////////////////////////////
+        $apply_flg = Work_consult_message::join('works', 'works.id', 'work_consult_messages.task_id')
+            ->Where('work_consult_messages.task_id', '=', $work_detail_info->id)
+            ->Where('work_consult_messages.sender_id', '=', $user_id)
+            ->first();
+        if (isset($apply_flg)) {
+
+            $apply_flg = $apply_flg->task_id;
+        } else {
+
+            $apply_flg = NULL;
+        }
+        ////////////////////////////////////////////////////////////////
+
+        return view('user.work_detail_info_page', compact('work_detail_info', 'apply_flg'));
+    }
+
+    public function apply_job_page($id)
+    {
+        $work_detail_info = Work::join('users', 'users.id', 'works.order_person_id')
+            ->Where('works.id', '=', $id)
+            ->select('works.id', 'users.id as u_id', 'works.work_title', 'works.work_contents', 'works.apply_number', 'works.rewards', 'works.category_id', 'users.user_name', 'users.image')
+            ->first();
+
+        return view('user.apply_job_page', compact('work_detail_info'));
+    }
+
+    public function apply_job(Request $request, $id)
+    {
+
+        $request->validate([
+            'apply_message' => 'required',
+        ], [
+            'apply_message.required' => 'メッセージが入力されていません。',
+        ]);
+
+
+        $sender_id = $request->input('sender_id');
+        $receiver_id = $request->input('receiver_id');
+        $category_id = $request->input('category_id');
+        $apply_message = $request->input('apply_message');
+        $work_info = Work::find($id);
+
+        if ($work_info->apply_number != NULL) {
+            //既に応募者がいる場合は以下の処理を実行
+
+            ////////////////////////////////////////////////////////////////
+            ////Work_consult_messageにインサート
+            ////////////////////////////////////////////////////////////////
+            $work_consult_message = new Work_consult_message();
+            $work_consult_message->work_id = $category_id;
+            $work_consult_message->sender_id = $sender_id;
+            $work_consult_message->receiver_id = $receiver_id;
+            $work_consult_message->consult_message = $apply_message;
+            $work_consult_message->message_status += 1;
+            $work_consult_message->task_id = $work_info->id;
+            ////////////////////////////////////////////////////////////////
+
+
+            ////////////////////////////////////////////////////////////////
+            //応募者数追加
+            ////////////////////////////////////////////////////////////////
+            $work_info->apply_number += 1;
+            ////////////////////////////////////////////////////////////////
+
+
+            ////////////////////////////////////////////////////////////////
+            //通知機能処理
+            ////////////////////////////////////////////////////////////////
+            $notification_info = new Notification();
+            $notification_info->notificationFrom = $sender_id;
+            $notification_info->notificationTo = $receiver_id;
+            ///////////////////////////////////////////////////////////////
+
+
+        } else {
+            //始めての応募者の場合は以下の処理を実行
+
+            ////////////////////////////////////////////////////////////////
+            ////Work_consult_messageにインサート
+            ////////////////////////////////////////////////////////////////
+            $work_consult_message = new Work_consult_message();
+            $work_consult_message->work_id = $category_id;
+            $work_consult_message->sender_id = $sender_id;
+            $work_consult_message->receiver_id = $receiver_id;
+            $work_consult_message->consult_message = $apply_message;
+            $work_consult_message->message_status = 1;
+            $work_consult_message->task_id = $work_info->id;
+            ////////////////////////////////////////////////////////////////
+
+
+            ////////////////////////////////////////////////////////////////
+            //応募者数追加
+            ////////////////////////////////////////////////////////////////
+            $work_info->apply_number = 1;
+            ////////////////////////////////////////////////////////////////
+
+
+            ////////////////////////////////////////////////////////////////
+            //通知機能処理
+            ////////////////////////////////////////////////////////////////
+            $notification_info = new Notification();
+            $notification_info->notificationFrom = $sender_id;
+            $notification_info->notificationTo = $receiver_id;
+            ///////////////////////////////////////////////////////////////
+
+        }
+
+
+        $work_consult_message->save();
+        $work_info->save();
+        $notification_info->save();
+
+
+        return redirect()->back()->with('message', '応募が完了しました。');
+    }
+
+    public function choose_applicant(Request $request)
+    {
+        $applicant_id = $request->input('applicant_id');
+        $work_id = $request->input('work_id');
+        $work_info = Work::find($work_id);
+
+        ///////////////////////////////////////////////////////////////
+        //仕事を依頼する人のデータ反映処理
+        ////////////////////////////////
+        $work_info->receiver_person_id = $applicant_id;
+        ////////////////////////////////
+
+        $work_info->save();
+
+        return redirect()->back()->with('message', '確定処理が完了しました。');
 
     }
 }

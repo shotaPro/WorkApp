@@ -204,6 +204,14 @@
         <main class="py-4">
             <div class="container-xxl position-relative bg-white p-0">
                 <h1 class="text-center">メッセージ内容</h1>
+                @if (session()->has('message'))
+                    <div class="alert alert-success">
+                        <button type="button" class="close" data-dismiss="alert">
+                            x
+                        </button>
+                        {{ session()->get('message') }}
+                    </div>
+                @endif
 
                 @if ($errors->any())
                     <ul>
@@ -216,7 +224,20 @@
                 <!-- Content Start -->
                 <div class="content mx-auto">
                     <!-- Sale & Revenue Start -->
+                    {{-- 送信者の情報 --}}
                     <div class="container-fluid ml-6">
+                        @if ($job_recruit_info != null)
+                            <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
+                                <div class="card-body">
+                                    <h5 class="card-title"></h5>{{ $job_recruit_info->work_title }}
+                                    <p class="card-text">{{ $job_recruit_info->work_contents }}</p>
+                                    <h5>報酬額</h5>
+                                    <p class="card-text">{{ number_format($job_recruit_info->rewards) }}円</p>
+                                    <h5>応募数</h5>
+                                    <p class="card-text">{{ $job_recruit_info->apply_number }}人</p>
+                                </div>
+                            </div>
+                        @endif
                         <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
                             <div style="display: flex">
                                 <img style="height: 40px; width: 40px;"
@@ -227,6 +248,7 @@
                                 <p class="card-text">{{ $sender_info->consult_message }}</p>
                             </div>
                         </div>
+                        {{-- 返信情報 --}}
                         @if ($reply_message != null)
                             @foreach ($reply_message as $info)
                                 <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
@@ -242,19 +264,28 @@
                                 </div>
                             @endforeach
                         @endif
-                        <form action="{{ url('reply_consult_message', $sender_info->id) }}"
-                            method="POST">
-                            @csrf
-                            <textarea name="reply_message" type="text" style="display: block; margin-left:auto; margin-right: auto; width:20%"
-                                placeholder="ここにメッセージを入力">
+                        <div class="text-center mt-4">
+                            <form action="{{ url('reply_consult_message', $sender_info->id) }}" method="POST">
+                                @csrf
+                                <textarea name="reply_message" type="text" style="display: block; margin-left:auto; margin-right: auto; width:20%"
+                                    placeholder="ここにメッセージを入力">
 
                             </textarea>
-                            <input type="number" name="messageFrom_user_id" style="display:none"
-                                value="{{ $sender_info->receiver_id }}">
-                            <div class="text-center mt-4">
+                                <input type="number" name="messageFrom_user_id" style="display:none"
+                                    value="{{ $sender_info->receiver_id }}">
                                 <button class="btn btn-primary" type="submit">この内容で返信する</button>
-                            </div>
-                        </form>
+                            </form>
+                            {{-- 自分が提示した仕事に対して応募のメッセージがあった場合、以下の仕事依頼確定ボタンを表示 --}}
+                            @if ($sender_info->task_id != null)
+                                <form action="{{ url('choose_applicant') }}" method="POST">
+                                    @csrf
+                                    <input name="applicant_id" type="hidden" value="{{ $sender_info->sender_id }}">
+                                    <input name="work_id" type="hidden" value="{{ $job_recruit_info->id }}">
+                                    <button class="btn btn-warning" type="submit">この人に仕事の依頼を確定する</button>
+                                </form>
+                            @endif
+                        </div>
+
                     </div>
                     <!-- Sale & Revenue End -->
 
@@ -272,17 +303,17 @@
             <script src="admin/lib/waypoints/waypoints.min.js"></script>
             <script src="admin/lib/owlcarousel/owl.carousel.min.js"></script>
             <script src="admin/lib/tempusdominus/js/moment.min.js"></script>
-            <script src="admin/lib/tempusdominus/js/moment-timezone.min.js"></script>
-            <script src="admin/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
-
-            <!-- Template Javascript -->
-            <script src="admin/js/main.js"></script>
-
             <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+            <!-- Template Javascript -->
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
             </script>
+
+            <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="admin/lib/chart/chart.min.js"></script>
 
 
 </body>
