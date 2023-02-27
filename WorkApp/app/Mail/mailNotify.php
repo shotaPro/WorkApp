@@ -21,9 +21,9 @@ class mailNotify extends Mailable
 
     private $data;
 
-    public function __construct($data)
+    public function __construct()
     {
-        return $this->data = $data;
+
     }
 
     /**
@@ -46,11 +46,7 @@ class mailNotify extends Mailable
     public function content()
     {
         return new Content(
-            'email.index',
-            null,
-            null,
-            null,
-            $this->data
+            markdown: 'mail.mail-notify'
         );
     }
 

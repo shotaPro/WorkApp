@@ -536,7 +536,16 @@ class HomeController extends Controller
         $work_info->receiver_person_id = $applicant_id;
         ////////////////////////////////
 
-        $work_info->save();
+        ///////////////////////////////////////////////////////////////
+        //依頼する人にあなたで確定しましたとの旨を伝えるメール送信処理
+        ///////////////////////////////////////////////////////////////
+        $work_person_info = User::find($applicant_id);
+        $work_person_email = $work_person_info->email;
+
+        Mail::to($work_person_email)->send(new MailNotify());
+        ////////////////////////////////
+
+        // $work_info->save();
 
         return redirect()->back()->with('message', '確定処理が完了しました。');
 
