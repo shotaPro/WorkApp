@@ -19,11 +19,11 @@ class mailNotify extends Mailable
      * @return void
      */
 
-    private $data;
+    private $user_name;
 
-    public function __construct()
+    public function __construct($user_name)
     {
-
+        $this->user_name = $user_name;
     }
 
     /**
@@ -46,7 +46,8 @@ class mailNotify extends Mailable
     public function content()
     {
         return new Content(
-            markdown: 'mail.mail-notify'
+            markdown: 'mail.mail-notify',
+            with: ['user_name' => $this->user_name]
         );
     }
 

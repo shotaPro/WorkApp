@@ -1,7 +1,8 @@
 <x-mail::message>
 # Introduction
 
-The body of your message.
+おめでとうございます。
+{{ $user_name }}さんに仕事の依頼することが確定しました。
 
 <x-mail::button :url="''">
 Button Text

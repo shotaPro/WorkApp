@@ -540,9 +540,9 @@ class HomeController extends Controller
         //依頼する人にあなたで確定しましたとの旨を伝えるメール送信処理
         ///////////////////////////////////////////////////////////////
         $work_person_info = User::find($applicant_id);
+        $work_person_name = $work_person_info->user_name;
         $work_person_email = $work_person_info->email;
-
-        Mail::to($work_person_email)->send(new MailNotify());
+        Mail::to($work_person_email)->send(new MailNotify($work_person_name));
         ////////////////////////////////
 
         // $work_info->save();

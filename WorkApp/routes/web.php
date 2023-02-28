@@ -60,14 +60,3 @@ Route::post('/apply_job/{id}', [HomeController::class, 'apply_job']);
 Route::post('/choose_applicant', [HomeController::class, 'choose_applicant']);
 
 
-
-
-////////////////////////////////////////////////////////////////
-//メール送信機能
-////////////////////////////////////////////////////////////////
-Route::get('/mail-notify', function(){
-    Mail::to('test@test.com')->send(new MailNotify());
-    return 'メールが送信されました。';
-
-});
-////////////////////////////////
