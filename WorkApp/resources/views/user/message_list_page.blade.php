@@ -8,6 +8,8 @@
 
     $category_info = W_category::with(['getSubcategory.category'])->get();
 
+    
+
 @endphp
 
 <!doctype html>

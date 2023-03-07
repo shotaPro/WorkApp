@@ -37,7 +37,7 @@ Route::post('/register_subcategory', [AdminController::class, 'register_subcateg
 ///ユーザー
 /////////////////////////////////
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/user_profile_page', [HomeController::class, 'user_profile_page']);
+Route::get('/user_profile_page/{id}', [HomeController::class, 'user_profile_page']);
 Route::get('/user_profile_register_page', [HomeController::class, 'user_profile_register_page']);
 Route::post('/user_profile_register', [HomeController::class, 'user_profile_register']);
 Route::get('/user_profile_edit_page/{id}', [HomeController::class, 'user_profile_edit_page']);
@@ -58,5 +58,9 @@ Route::get('/work_detail_info_page/{id}', [HomeController::class, 'work_detail_i
 Route::get('/apply_job_page/{id}', [HomeController::class, 'apply_job_page']);
 Route::post('/apply_job/{id}', [HomeController::class, 'apply_job']);
 Route::post('/choose_applicant', [HomeController::class, 'choose_applicant']);
+Route::get('/work_management_page', [HomeController::class, 'work_management_page']);
+Route::get('/contract_list_page', [HomeController::class, 'contract_list_page']);
+Route::post('/work_complete', [HomeController::class, 'work_complete']);
+Route::get('/close_recruit', [HomeController::class, 'close_recruit']);
 
 

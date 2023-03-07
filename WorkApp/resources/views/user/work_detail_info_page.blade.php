@@ -211,33 +211,56 @@
                             <button class="btn btn-outline-success" type="submit">検索</button><br>
                         </form>
 
-                            <div class="card" style="margin-top:20px;">
-                                <div class="card-body">
-                                    <div style="display: flex">
-                                        <img style="height: 40px; width: 40px;"
-                                            src="/profile_picture/{{ $work_detail_info->image }}" class=""
-                                            alt="...">
-                                        <h4 style="margin-left: 20px">{{ $work_detail_info->user_name }}</h4>
-                                    </div>
-                                    <h5 class="card-title">{{ $work_detail_info['work_title'] }}</h5>
-                                    <p class="card-text">{{ $work_detail_info['work_contents'] }}</p>
-                                    <h5>報酬額</h5>
-                                    <p class="card-text">{{ $work_detail_info['rewards'] }}円</p>
-                                    <h5>応募数</h5>
-                                    <p class="card-text">
-                                        @if($work_detail_info['apply_number'] == NULL)
-                                        0
-                                        @else
-
-                                        @endif
-                                    </p>
-                                    @if($apply_flg == NULL)
-                                    <a href="{{ url('apply_job_page', $work_detail_info['id']) }}" class="btn btn-primary">応募画面へ</a>
-                                    @else
-                                    <a href="#" class="btn btn-light">応募済み</a>
-                                    @endif
+                        <div class="card" style="margin-top:20px;">
+                            <div class="card-body">
+                                <div style="display: flex">
+                                    <img style="height: 40px; width: 40px;"
+                                        src="/profile_picture/{{ $work_detail_info->image }}" class=""
+                                        alt="...">
+                                    <h4 style="margin-left: 20px">{{ $work_detail_info->user_name }}</h4>
                                 </div>
+                                <h5 class="card-title">{{ $work_detail_info['work_title'] }}</h5>
+                                <p class="card-text">{{ $work_detail_info['work_contents'] }}</p>
+                                <h5>報酬額</h5>
+                                <p class="card-text">{{ $work_detail_info['rewards'] }}円</p>
+                                <h5>応募数</h5>
+                                <p class="card-text">
+                                    @if ($work_detail_info['apply_number'] == null)
+                                        0
+                                    @else
+                                    @endif
+                                </p>
+                                @if ($apply_flg == null)
+                                    <a href="{{ url('apply_job_page', $work_detail_info['id']) }}"
+                                        class="btn btn-primary">応募画面へ</a>
+                                @else
+                                    <a href="#" class="btn btn-light">応募済み</a>
+                                @endif
                             </div>
+                        </div>
+
+                        <div style="margin-top:20px;">
+                            <h5>応募したワーカー覧</h5>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col">名前</th>
+                                    </tr>
+                                </thead>
+                                @php
+                                $key = 1;
+                                @endphp
+                                    @foreach($applicant_list as $key => $list)
+                                <tbody>
+                                    <tr>
+                                        <th scope="row">{{ $key++ }}</th>
+                                        <td><a href="{{ url('user_profile_page', $list->sender_id) }}">{{ $list->user_name }}</a></td>
+                                    </tr>
+                                </tbody>
+                                @endforeach
+                            </table>
+                        </div>
                     </div>
                     <!-- Sale & Revenue End -->
                 </div>

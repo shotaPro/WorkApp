@@ -2,7 +2,6 @@
     use App\Models\User;
     use App\Models\W_category;
 
-    $user_id = null;
     $user_id = Auth::user()->id;
     $profile_data = User::find($user_id);
 
@@ -68,7 +67,7 @@
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                         <li><a class="dropdown-item"
-                                                href="{{ url('/user_profile_page') }}">自分のプロフィールを確認する</a></li>
+                                                href="{{ url('/user_profile_page', $user_id) }}">自分のプロフィールを確認する</a></li>
                                         @if ($profile_data['user_name'] != '')
                                             <li><a class="dropdown-item"
                                                     href="{{ url('/user_profile_edit_page', $profile_data['id']) }}">編集する</a>
@@ -167,7 +166,7 @@
                             <a class="nav-link active" aria-current="page" href="#">相談</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">契約一覧</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url('contract_list_page') }}">契約一覧</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">報酬</a>
@@ -199,7 +198,7 @@
                                 href="{{ url('order_work_page') }}">仕事を掲載</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">仕事管理</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url('work_management_page') }}">仕事管理</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">ワーカー管理</a>

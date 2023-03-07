@@ -12,6 +12,7 @@ use App\Models\Work_consult_message;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotify;
+use App\Mail\CompleteMail;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\Reply_message;
 
@@ -47,9 +48,9 @@ class HomeController extends Controller
         }
     }
 
-    public function user_profile_page()
+    public function user_profile_page($id)
     {
-        $user_id = Auth::user()->id;
+        $user_id = $id;
         $profile_data = User::find($user_id);
         return view('user.user_profile_page', compact('user_id', 'profile_data'));
     }
@@ -273,7 +274,6 @@ class HomeController extends Controller
             ///最初の相談メッセージの送信者の情報は固定
             ////////////////////////////////
             if ($sender_id == $user_id) {
-
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
                     ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.task_id', '=', $task_id)
@@ -285,9 +285,11 @@ class HomeController extends Controller
             } else {
 
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
+                    ->Where('work_consult_messages.sender_id', '=', $sender_id)
                     ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
                     ->first();
             }
@@ -301,6 +303,7 @@ class HomeController extends Controller
             if ($sender_id != $user_id) {
 
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
@@ -309,6 +312,7 @@ class HomeController extends Controller
             } else {
 
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
+                    ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
@@ -421,7 +425,17 @@ class HomeController extends Controller
         }
         ////////////////////////////////////////////////////////////////
 
-        return view('user.work_detail_info_page', compact('work_detail_info', 'apply_flg'));
+
+        ////////////////////////////////////////////////////////////////
+        //応募者リストのためのデータ抽出
+        ////////////////////////////////
+        $applicant_list = Work::join('work_consult_messages', 'work_consult_messages.task_id', 'works.id')
+            ->join('users', 'users.id', 'work_consult_messages.sender_id')
+            ->Where('work_consult_messages.task_id', '=', $id)
+            ->get();
+        ////////////////////////////////////////////////////////////////
+
+        return view('user.work_detail_info_page', compact('work_detail_info', 'apply_flg', 'applicant_list'));
     }
 
     public function apply_job_page($id)
@@ -533,7 +547,14 @@ class HomeController extends Controller
         ///////////////////////////////////////////////////////////////
         //仕事を依頼する人のデータ反映処理
         ////////////////////////////////
-        $work_info->receiver_person_id = $applicant_id;
+        if ($work_info->receiver_person_id != NULL) {
+
+            $chosen_person_ids = $work_info->receiver_person_id . ',' . $applicant_id;
+            Work::Where('id', '=', $work_id)->update(['receiver_person_id' => $chosen_person_ids]);
+        } else {
+
+            $work_info->receiver_person_id = $applicant_id;
+        }
         ////////////////////////////////
 
         ///////////////////////////////////////////////////////////////
@@ -545,9 +566,59 @@ class HomeController extends Controller
         Mail::to($work_person_email)->send(new MailNotify($work_person_name));
         ////////////////////////////////
 
-        // $work_info->save();
+        $work_info->save();
 
         return redirect()->back()->with('message', '確定処理が完了しました。');
+    }
+
+    public function work_management_page()
+    {
+        $user_id = Auth::user()->id;
+        $work_management_info = Work::Where('order_person_id', '=', $user_id)->Where('receiver_person_id', '!=', NULL)->get();
+
+        return view('user.work_management_page', compact('work_management_info'));
+    }
+
+    public function contract_list_page()
+    {
+        $user_id = Auth::user()->id;
+        $contrast_list = Work::Where('receiver_person_id', '=', $user_id)->get();
+
+        return view('user.contract_list_page', compact('contrast_list'));
+    }
+
+    public function work_complete(Request $request)
+    {
+        $work_id = $request->work_id;
+        $order_person_id = $request->order_person_id;
+
+        $order_person_info = User::find($order_person_id);
+        $order_person_email = $order_person_info->email;
+        $order_person_name = $order_person_info->name;
+
+        $work_info = Work::find($work_id);
+        $work_info->completed_flg = 1;
+
+        $work_info->save();
+
+        ////////////////////////////////////////////////////////////////
+        //納品完了メール送信処理
+        ////////////////////////////////
+        Mail::to($order_person_email)->send(new CompleteMail($order_person_name));
+        ////////////////////////////////////////////////////////////////
+
+        return redirect()->back()->with('message', '納品報告が完了しました。依頼者の確認が完了するまでお待ちください。');
+    }
+
+    public function close_recruit(Request $request)
+    {
+        $work_id = $request->work_id;
+        $work_info = Work::find($work_id);
+        $work_info->recruit_flg = 1;
+
+        $work_info->save();
+
+        return redirect()->back()->with('message', '募集締め切り処理は完了しました。');
 
     }
 }

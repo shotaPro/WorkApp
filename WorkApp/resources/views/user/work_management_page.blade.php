@@ -1,19 +1,12 @@
 @php
-    namespace App\Http\Controllers;
-    use Illuminate\Support\Facades\Auth;
-
     use App\Models\User;
     use App\Models\W_category;
-    use Illuminate\Http\Request;
 
     $user_id = null;
     $user_id = Auth::user()->id;
     $profile_data = User::find($user_id);
 
     $category_info = W_category::with(['getSubcategory.category'])->get();
-
-    $applicant_user_info = $job_recruit_info->receiver_person_id;
-    $applicant_user_info = explode(',', $applicant_user_info);
 
 @endphp
 
@@ -144,8 +137,7 @@
                 <div id="receiver_menu" class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page"
-                                href="{{ url('message_list_page') }}">Home</a>
+                            <a class="nav-link active" aria-current="page" href="{{ url('home') }}">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">気になる</a>
@@ -158,9 +150,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">報酬</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">メッセージ</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">メッセージ</a>
@@ -205,99 +194,77 @@
             </div>
         </nav>
         <main class="py-4">
-            <div class="container-xxl position-relative bg-white p-0">
-                <h1 class="text-center">メッセージ内容</h1>
-                @if (session()->has('message'))
-                    <div class="alert alert-success">
-                        <button type="button" class="close" data-dismiss="alert">
-                            x
-                        </button>
-                        {{ session()->get('message') }}
-                    </div>
-                @endif
+            <div class="container-xxl position-relative bg-white d-flex p-0">
 
-                @if ($errors->any())
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li style="color: red">※{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                @endif
+                <!-- Sidebar Start -->
+                <div class="sidebar pe-4 pb-3">
+                    <nav class="navbar bg-light navbar-light">
+                        <a href="index.html" class="navbar-brand mx-4 mb-3">
+                            <h3 class="text-primary"><i class="fa fa-hashtag me-2"></i>DASHMIN</h3>
+                        </a>
+                        <div class="d-flex align-items-center ms-4 mb-4">
+                            <div class="position-relative">
+                                <img class="rounded-circle" src="img/user.jpg" alt=""
+                                    style="width: 40px; height: 40px;">
+                                <div
+                                    class="bg-success rounded-circle border border-2 border-white position-absolute end-0 bottom-0 p-1">
+                                </div>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="mb-0">Jhon Doe</h6>
+                                <span>Admin</span>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+                <!-- Sidebar End -->
+
 
                 <!-- Content Start -->
                 <div class="content mx-auto">
+
                     <!-- Sale & Revenue Start -->
-                    {{-- 送信者の情報 --}}
                     <div class="container-fluid ml-6">
-                        @if ($job_recruit_info != null)
-                            <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
+                        <h1>仕事一覧</h1>
+                        <form class="d-flex">
+                            <input style="width: 80%" class="" type="search" placeholder="キーワードで探す"
+                                aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">検索</button><br>
+                        </form>
+                        @if (session()->has('message'))
+                        <div class="alert alert-success">
+                            <button type="button" class="close" data-dismiss="alert">
+                                x
+                            </button>
+                            {{ session()->get('message') }}
+                            </div>
+                        @endif
+                        @foreach ($work_management_info as $info)
+                            <div class="card" style="margin-top:20px;">
+                                <div style="display: flex">
+                                    <img style="height: 40px; width: 40px;" src="/profile_picture/" class=""
+                                        alt="...">
+                                    <h4 id="work_id" style="display:none" style="margin-left: 20px">
+                                        {{ $info->id }}</h4>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title"></h5>{{ $job_recruit_info->work_title }}
-                                    <p class="card-text">{{ $job_recruit_info->work_contents }}</p>
+                                    <h5 class="card-title">{{ $info->work_title }}</h5>
+                                    <p class="card-text">{{ $info->work_contents }}</p>
                                     <h5>報酬額</h5>
-                                    <p class="card-text">{{ number_format($job_recruit_info->rewards) }}円</p>
+                                    <p class="card-text">{{ $info->rewards }}円</p>
                                     <h5>応募数</h5>
-                                    <p class="card-text">{{ $job_recruit_info->apply_number }}人</p>
-                                </div>
-                            </div>
-                        @endif
-                        <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
-                            <div style="display: flex">
-                                <img style="height: 40px; width: 40px;"
-                                    src="/profile_picture/{{ $sender_info->image }}" class="" alt="...">
-                                <h4 style="margin-left: 20px">{{ $sender_info->user_name }}</h4>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">{{ $sender_info->consult_message }}</p>
-                            </div>
-                        </div>
-                        {{-- 返信情報 --}}
-                        @if ($reply_message != null)
-                            @foreach ($reply_message as $info)
-                                <div class="mx-auto  card" style="width: 18rem; margin-bottom: 20px">
-                                    <div style="display: flex">
-                                        <img style="height: 40px; width: 40px;"
-                                            src="/profile_picture/{{ $info->image }}" class=""
-                                            alt="...">
-                                        <h4 style="margin-left: 20px">{{ $info->user_name }}</h4>
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="card-text">{{ $info->reply_message }}</p>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endif
-                        <div class="text-center mt-4">
-                            <form action="{{ url('reply_consult_message', $sender_info->id) }}" method="POST">
-                                @csrf
-                                <textarea name="reply_message" type="text" style="display: block; margin-left:auto; margin-right: auto; width:20%"
-                                    placeholder="ここにメッセージを入力">
-
-                            </textarea>
-                                <input type="number" name="messageFrom_user_id" style="display:none"
-                                    value="{{ $sender_info->receiver_id }}">
-                                <button class="btn btn-primary" type="submit">この内容で返信する</button>
-                            </form>
-                            {{-- 自分が提示した仕事に対して応募のメッセージがあった場合、以下の仕事依頼確定ボタンを表示 --}}
-                            @if ($sender_info->task_id != null)
-                            @if($user_id == $job_recruit_info->order_person_id)
-                                <form action="{{ url('choose_applicant') }}" method="POST">
-                                    @csrf
-                                    <input name="applicant_id" type="hidden" value="{{ $sender_info->sender_id }}">
-                                    <input name="work_id" type="hidden" value="{{ $job_recruit_info->id }}">
-                                    @if(in_array($sender_info->sender_id, $applicant_user_info))
-                                    <a href="#" class="btn btn-light">確定済み</a>
+                                    <p class="card-text">{{ $info->apply_number }}</p>
+                                    @if($info->recruit_flg != 1)
+                                    <button type="button" id="close_recruit_btn" class="btn btn-primary">募集を締め切る</button>
                                     @else
-                                    <button class="btn btn-warning" type="submit">この人に仕事の依頼を確定する</button>
+                                    <button type="button" class="btn btn-light">募集締め切り済み</button>
                                     @endif
-                                </form>
-                            @endif
-                            @endif
-                        </div>
-
+                                    <a href="" class="btn btn-primary">振込みを行う</a>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                     <!-- Sale & Revenue End -->
-
                 </div>
                 <!-- Content End -->
 
@@ -312,19 +279,74 @@
             <script src="admin/lib/waypoints/waypoints.min.js"></script>
             <script src="admin/lib/owlcarousel/owl.carousel.min.js"></script>
             <script src="admin/lib/tempusdominus/js/moment.min.js"></script>
-            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+            <script src="admin/lib/tempusdominus/js/moment-timezone.min.js"></script>
+            <script src="admin/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
             <!-- Template Javascript -->
+            <script src="admin/js/main.js"></script>
+
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
                 integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
             </script>
 
-            <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="admin/lib/chart/chart.min.js"></script>
+            <script>
+                const receiver_btn = document.getElementById('receiver_btn');
+                const order_btn = document.getElementById('order_btn');
+                const receiverMenu = document.getElementById('receiver_menu');
+                const orderMenu = document.getElementById('order_menu');
+                const close_recruit_btn = document.getElementById('close_recruit_btn');
 
 
+                console.log(receiver_btn, order_btn, receiverMenu, orderMenu);
+
+                receiver_btn.addEventListener('click', function(e) {
+
+                    e.preventDefault();
+                    receiverMenu.style.cssText = 'display: none !important';
+
+                    orderMenu.style.display = null;
+                    orderMenu.style.display = 'block';
+
+
+                })
+
+                order_btn.addEventListener('click', function(e) {
+
+                    e.preventDefault();
+                    orderMenu.style.cssText = 'display: none !important';
+
+                    receiverMenu.style.display = null;
+                    receiverMenu.style.display = 'block';
+
+                })
+
+                ////////////////////////////////////////////////////////////////
+                //募集締め切り前のモーダル処理
+                ///////////////////////////////////
+                close_recruit_btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    var result = window.confirm('募集締め切り処理を実行してもよろしいですか？')
+
+                    if (result) {
+
+                        var work_id = document.getElementById('work_id');
+                        work_id = work_id.textContent;
+
+                        window.location.href = 'close_recruit?work_id=' + work_id;
+
+                    } else {
+
+
+                    }
+
+
+
+                })
+                ////////////////////////////////////
+            </script>
 </body>
 
 </html>
