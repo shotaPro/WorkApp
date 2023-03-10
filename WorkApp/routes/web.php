@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\StripePaymentController;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MailNotify;
 
@@ -64,3 +65,9 @@ Route::post('/work_complete', [HomeController::class, 'work_complete']);
 Route::get('/close_recruit', [HomeController::class, 'close_recruit']);
 
 
+////////////////////////////////////////////////////////////////
+///stripテスト
+////////////////////////////////
+Route::get('/stripe', [StripePaymentController::class, 'paymentStripe'])->name('addmoney.paymentstripe');
+Route::post('/add-money-stripe', [StripePaymentController::class, 'postPaymentStripe'])->name('addmoney.stripe');
+////////////////////////////////////////////////////////////////
