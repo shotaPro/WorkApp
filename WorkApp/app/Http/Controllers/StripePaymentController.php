@@ -9,6 +9,7 @@ use Stripe\Token;
 use Stripe\PaymentIntent;
 use Stripe\PaymentMethod;
 use Stripe\Charge;
+use App\Models\Work;
 
 
 
@@ -17,13 +18,17 @@ use Stripe\Charge;
 
 class StripePaymentController extends Controller
 {
-    public function paymentStripe()
+    public function paymentStripe(Request $request, $id)
     {
-        return view('stripe');
+        $price = $id;
+        $work_id = $request->input("work_id");
+
+        return view('stripe', compact('price', 'work_id'));
     }
 
-    public function postPaymentStripe(Request $request)
+    public function postPaymentStripe(Request $request, $id)
     {
+        $price = $id;
         $validator = Validator::make($request->all(), [
             'card_no' => 'required',
             'ccExpiryMonth' => 'required',
@@ -71,7 +76,7 @@ class StripePaymentController extends Controller
                 // ]);
 
                 $charge = PaymentIntent::create([
-                    'amount' => 5000,
+                    'amount' => $price,
                     'currency' => 'jpy',
                     'description' => 'wallet',
                     'payment_method_types' => ['card'],
@@ -83,7 +88,23 @@ class StripePaymentController extends Controller
                   ]);
 
                 if ($charge['status'] == 'succeeded') {
-                    return redirect()->route('addmoney.paymentstripe');
+                    
+                    ////////////////////////////////////////////////////////////////
+                    //支払い済みフラグ
+                    ////////////////////////////////////////////////////////////////
+                    $work_id = $request->input("work_id");
+                    $work_info = work::find($work_id);
+                    $work_info->pay_flg = 1;
+                    $work_info->save();
+                    ///////////////////////////////////
+
+                    ////////////////////////////////////////////////////////////////
+                    //支払い完了メール送信
+                    ////////////////////////////////////////////////////////////////
+
+                    ////////////////////////////////
+
+                    return redirect()->back();
                 } else {
                     return redirect()->route('addmoney.paymentstripe')->with('error', 'Money not add in wallet!');
                 }

@@ -15,6 +15,8 @@ use App\Mail\MailNotify;
 use App\Mail\CompleteMail;
 use Illuminate\Support\Facades\Redirect;
 use App\Models\Reply_message;
+use App\Models\Reputation;
+use App\Models\Admin_news;
 
 class HomeController extends Controller
 {
@@ -40,8 +42,16 @@ class HomeController extends Controller
         if ($user_id != 1) {
 
             $notification_info = Notification::Where('notificationTo', '=', $user_id)->Where('status', '=', NULL)->get();
+            $work_info = Work::Where('completed_flg', '=', NULL)->get();
 
-            return view('user.home', compact('notification_info'));
+            ////////////////////////////////
+            //お知らせの情報取得
+            ////////////////////////////////
+            $admin_news_info = Admin_news::all();
+            ////////////////
+
+
+            return view('user.home', compact('notification_info', 'work_info', 'admin_news_info'));
         } else {
 
             return view('admin.home');
@@ -52,7 +62,45 @@ class HomeController extends Controller
     {
         $user_id = $id;
         $profile_data = User::find($user_id);
-        return view('user.user_profile_page', compact('user_id', 'profile_data'));
+
+        $reputation_data = Reputation::join('users', 'users.id', 'reputations.reputation_to_id')
+            ->Where('reputations.reputation_to_id', '=', $user_id)
+            ->get();
+
+        ////////////////////////////////////////////////////////////////////////
+        //評価をしたユーザーの情報取得
+        ////////////////////////////////////////////////////////////////////////
+        $reputation_by_userData = array();
+        foreach ($reputation_data as $data) {
+            $reputation_by_userData[] = User::join('reputations', 'reputations.reputation_by_id', 'users.id')
+                ->Where('reputation_by_id', '=', $data['reputation_by_id'])
+                ->get();
+        }
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        //総合評価出力処理
+        ////////////////////////////////////////////////////////////////////////
+        $total_reputation_score = 0;
+
+        foreach ($reputation_data as $data) {
+            $total_reputation_score += (int)$data->reputation_score;
+        }
+
+        //評価の合計点を評価したユーザーの人数で割る
+        $user_count = count($reputation_by_userData);
+
+        if($user_count == 0){
+
+            return view('user.user_profile_page', compact('user_id', 'profile_data', 'reputation_data', 'reputation_by_userData'));
+
+        }else {
+
+            $total_reputation_score = (int)$total_reputation_score / $user_count;
+            return view('user.user_profile_page', compact('user_id', 'profile_data', 'reputation_data', 'reputation_by_userData', 'total_reputation_score'));
+
+        }
+
     }
 
     public function user_profile_register_page()
@@ -258,6 +306,7 @@ class HomeController extends Controller
     public function detail_consult_message(Request $request, $id)
     {
         $user_id = Auth::user()->id;
+        $user_id = (int)$user_id;
         $sender_id = $request->sender_id;
         $sender_id = (int)$sender_id;
         $receiver_id = $request->receiver_id;
@@ -280,17 +329,16 @@ class HomeController extends Controller
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
-                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
+                    ->select('work_consult_messages.id', 'users.id as user_id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
                     ->first();
             } else {
-
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
                     ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
                     ->Where('work_consult_messages.sender_id', '=', $sender_id)
-                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
+                    ->select('work_consult_messages.id', 'users.id as user_id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id', 'work_consult_messages.task_id')
                     ->first();
             }
         } else {
@@ -301,22 +349,20 @@ class HomeController extends Controller
             ///最初の相談メッセージの送信者の情報は固定
             ////////////////////////////////
             if ($sender_id != $user_id) {
-
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-                    ->join('works', 'works.id', 'work_consult_messages.task_id')
+                    // ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
-                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+                    ->select('work_consult_messages.id', 'users.id as user_id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
                     ->first();
             } else {
-
                 $sender_info =  Work_consult_message::join('users', 'users.id', 'work_consult_messages.sender_id')
-                    ->join('works', 'works.id', 'work_consult_messages.task_id')
+                    // ->join('works', 'works.id', 'work_consult_messages.task_id')
                     ->Where('work_consult_messages.sender_id', '=', $user_id)
                     ->Where('work_consult_messages.id', '=', $message_id)
                     ->orWhere('work_consult_messages.receiver_id', '=', $user_id)
-                    ->select('work_consult_messages.id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
+                    ->select('work_consult_messages.id', 'users.id as user_id', 'users.user_name', 'users.image', 'work_consult_messages.consult_message', 'work_consult_messages.work_id', 'work_consult_messages.sender_id', 'work_consult_messages.receiver_id')
                     ->first();
             }
         }
@@ -391,6 +437,7 @@ class HomeController extends Controller
         foreach ($work_data as $data) {
             $work_info[] = Work::join('users', 'users.id', 'works.order_person_id')
                 ->Where('works.order_person_id', '=', $data->order_person_id)
+                ->Where('works.recruit_flg', '=', NULL)
                 ->select('works.id', 'works.work_title', 'works.work_contents', 'works.apply_number', 'works.rewards', 'users.user_name', 'users.image')
                 ->get();
         }
@@ -619,6 +666,46 @@ class HomeController extends Controller
         $work_info->save();
 
         return redirect()->back()->with('message', '募集締め切り処理は完了しました。');
+    }
 
+    public function select_reputation_star(Request $request)
+    {
+
+        $user_id = Auth::user()->id;
+        $reputation_score = $request->input("review");
+        $reputation_message = $request->input("reputation_message");
+        $reputation_to_id = $request->input("reputation_to_id");
+        $reputation_by_id = $user_id;
+
+
+        $reputation_info = new reputation();
+        $reputation_info->reputation_score = $reputation_score;
+        $reputation_info->reputation_message = $reputation_message;
+        $reputation_info->reputation_to_id = $reputation_to_id;
+        $reputation_info->reputation_by_id = $reputation_by_id;
+
+        $reputation_info->save();
+
+        return redirect()->back()->with('message', '評価が送信されました。');
+    }
+
+    public function search_recruit_info(Request $request)
+    {
+
+        $search_text = $request->input('search_text');
+        $result = Work::join('users', 'users.id', 'works.order_person_id')
+        ->Where('work_title', 'LIKE', '%'.$search_text.'%')
+        ->Where('recruit_flg', '=', NULL)
+        ->get();
+
+        if($result->isNotEmpty()){
+
+            return redirect()->back()->with('work_info', [$result]);
+
+        }else {
+
+            return redirect()->back()->with('error', '検索結果が見つかりませんでした。');
+
+        }
     }
 }

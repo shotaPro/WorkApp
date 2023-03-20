@@ -13,3 +13,16 @@ COPY  --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN docker-php-ext-install gettext intl pdo_mysql
 
+# COPY /path/to/local/php.ini /usr/local/etc/php/php.ini
+
+# COPY php.ini /usr/local/etc/php/
+
+
+RUN apt update && \
+    git \
+    zip \
+    unzip \
+    vim \
+    docker-php-ext-install pdo_mysql bcmath && \
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug

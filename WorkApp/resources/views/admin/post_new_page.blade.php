@@ -23,7 +23,7 @@
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>
     <style>
-        .rating {
+        .star5_rating {
             position: relative;
             z-index: 0;
             display: inline-block;
@@ -33,12 +33,12 @@
             /*font-size: 30px; フォントサイズ 自由に設定化 */
         }
 
-        .rating:before,
-        .rating:after {
+        .star5_rating:before,
+        .star5_rating:after {
             content: '★★★★★';
         }
 
-        .rating:after {
+        .star5_rating:after {
             position: absolute;
             z-index: 1;
             top: 0;
@@ -49,57 +49,57 @@
             /* イエローカラー 自由に設定化 */
         }
 
-        .rating[data-rate="5"]:after {
+        .star5_rating[data-rate="5"]:after {
             width: 100%;
         }
 
         /* 星5 */
-        .rating[data-rate="4.5"]:after {
+        .star5_rating[data-rate="4.5"]:after {
             width: 90%;
         }
 
         /* 星4.5 */
-        .rating[data-rate="4"]:after {
+        .star5_rating[data-rate="4"]:after {
             width: 80%;
         }
 
         /* 星4 */
-        .rating[data-rate="3.5"]:after {
+        .star5_rating[data-rate="3.5"]:after {
             width: 70%;
         }
 
         /* 星3.5 */
-        .rating[data-rate="3"]:after {
+        .star5_rating[data-rate="3"]:after {
             width: 60%;
         }
 
         /* 星3 */
-        .rating[data-rate="2.5"]:after {
+        .star5_rating[data-rate="2.5"]:after {
             width: 50%;
         }
 
         /* 星2.5 */
-        .rating[data-rate="2"]:after {
+        .star5_rating[data-rate="2"]:after {
             width: 40%;
         }
 
         /* 星2 */
-        .rating[data-rate="1.5"]:after {
+        .star5_rating[data-rate="1.5"]:after {
             width: 30%;
         }
 
         /* 星1.5 */
-        .rating[data-rate="1"]:after {
+        .star5_rating[data-rate="1"]:after {
             width: 20%;
         }
 
         /* 星1 */
-        .rating[data-rate="0.5"]:after {
+        .star5_rating[data-rate="0.5"]:after {
             width: 10%;
         }
 
         /* 星0.5 */
-        .rating[data-rate="0"]:after {
+        .star5_rating[data-rate="0"]:after {
             width: 0%;
         }
 
@@ -197,96 +197,24 @@
         </nav>
         <main class="py-4">
             <div>
-                <h2 class="text-center">プロフィール画面</h2>
-                <section style="background-color: #eee;">
-                    <div class="container py-5">
-
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <div class="card mb-4">
-                                    <div class="card-body text-center">
-                                        <img src="/profile_picture/{{ $profile_data['image'] }}"
-                                            class="rounded-circle img-fluid" style="width: 150px;">
-                                        <h5 class="my-3">{{ $profile_data['user_name'] }}</h5>
-                                        <p class="text-muted mb-1">未設定</p>
-                                        <p class="text-muted mb-4">未設定</p>
-                                        <div class="d-flex justify-content-center mb-2">
-                                            <button type="button" class="btn btn-primary">Follow</button>
-                                            <button type="button"
-                                                class="btn btn-outline-primary ms-1">Message</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-8">
-                                <div class="card mb-4">
-                                    <div class="card-body">
-                                        <div class="row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">ユーザー名</p>
-                                            </div>
-                                            <div class="col-sm-9">
-                                                <p class="text-muted mb-0">{{ $profile_data['user_name'] }}</p>
-                                            </div>
-                                        </div>
-                                        <hr>
-                                        <div class="row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">プロフィール文</p>
-                                            </div>
-                                            <div class="col-sm-9">
-                                                <p class="text-muted mb-0">{{ $profile_data['profile_text'] }}</p>
-                                            </div>
-                                        </div>
-                                        <hr>
-                                        <div class="row">
-                                            <div class="col-sm-3">
-                                                <p class="mb-0">スキル</p>
-                                            </div>
-                                            <div class="col-sm-9">
-                                                <p class="text-muted mb-0">{{ $profile_data['skill'] }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <h2 class="text-center">お知らせ作成画面</h2>
                 <div class="text-center">
-                    @if (isset($total_reputation_score))
-                    <h5>評価</h5>
-                    <p>総合評価:{{ $total_reputation_score }}</p>
-                        @foreach ($reputation_by_userData as $data)
-                            @foreach ($data as $d)
-                                <div class="card mx-auto" style="width: 18rem;">
-                                    <img style="height: 40px; width: 40px;"
-                                        src="/profile_picture/{{ $d->image }}" class="card-img-top"
-                                        alt="...">
-                                    <div class="card-body">
-                                        <h5 class="card-title">評価:{{ $d->reputation_score }}
-                                            @if ($d->reputation_score == 5)
-                                                <p><span class="rating" data-rate="5"></span> 星5</p>
-                                            @elseif($d->reputation_score == 4)
-                                                <p><span class="rating" data-rate="4"></span> 星4</p>
-                                            @elseif($d->reputation_score == 3)
-                                                <p><span class="rating" data-rate="3"></span> 星3</p>
-                                            @elseif($d->reputation_score == 2)
-                                                <p><span class="rating" data-rate="2"></span> 星2</p>
-                                            @elseif($d->reputation_score == 1)
-                                                <p><span class="rating" data-rate="1"></span> 星1</p>
-                                            @else
-                                                <p><span class="rating" data-rate="0"></span> 星0</p>
-                                            @endif
-                                        </h5>
-                                        <p class="card-text">{{ $d->reputation_message }}</p>
-                                        <a href="#" class="btn btn-primary">Go somewhere</a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endforeach
-                    @endif
+                    <form action="{{ 'admin_news_post' }}" method="POST">
+                        @csrf
+                        <textarea name="news_text" id="" cols="30" rows="10"></textarea><br>
+                        <button type="submit">投稿する</button>
+                    </form>
                 </div>
+                <h2 class="text-center mt-4">投稿したお知らせ内容一覧</h2>
+                @foreach($all_news_info as $info)
+                <div style="border: 1px solid black; width: 80%" class="text-center mx-auto">
+                    <p>お知らせ: {{ $info->admin_news_text }}</p>
+                    <div class="text-right">
+                        <a class="btn btn-primary"  href="">編集する</a><br>
+                        <a class="btn btn-danger" href="">削除する</a>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </main>
     </div>

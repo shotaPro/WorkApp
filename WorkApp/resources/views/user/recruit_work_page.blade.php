@@ -1,6 +1,7 @@
 @php
     use App\Models\User;
     use App\Models\W_category;
+    use Illuminate\Support\Facades\Session;
 
     $user_id = null;
     $user_id = Auth::user()->id;
@@ -246,12 +247,44 @@
                     <!-- Sale & Revenue Start -->
                     <div class="container-fluid ml-6">
                         <h1>仕事一覧</h1>
-                        <form class="d-flex">
-                            <input style="width: 80%" class="" type="search" placeholder="キーワードで探す"
-                                aria-label="Search">
+                        <form action="{{ url('search_recruit_info') }}" method="GET" class="d-flex">
+                            <input name="search_text" style="width: 80%" class="" type="search"
+                                placeholder="キーワードで探す">
                             <button class="btn btn-outline-success" type="submit">検索</button><br>
                         </form>
-
+                        @if(Session::has('work_info'))
+                        @foreach (session('work_info') as $data)
+                            @foreach ($data as $info)
+                                <div class="card" style="margin-top:20px;">
+                                    <div style="display: flex">
+                                        <img style="height: 40px; width: 40px;"
+                                            src="/profile_picture/{{ $info->image }}" class=""
+                                            alt="...">
+                                        <h4 style="margin-left: 20px">{{ $info->user_name }}</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ $info->work_title }}</h5>
+                                        <p class="card-text">{{ $info->work_contents }}</p>
+                                        <h5>報酬額</h5>
+                                        <p class="card-text">{{ number_format($info->rewards) }}円</p>
+                                        <h5>応募数</h5>
+                                        <p class="card-text">
+                                            @if ($info->apply_number == null)
+                                                0
+                                            @else
+                                                {{ $info->apply_number }}
+                                            @endif
+                                        </p>
+                                        <a href="{{ url('work_detail_info_page', $info->id) }}"
+                                            class="btn btn-primary">詳細を見る</a>
+                                    </div>
+                                </div>
+                            @endforeach
+                            @php
+                                break;
+                            @endphp
+                        @endforeach
+                    @else
                         @foreach ($work_info as $data)
                             @foreach ($data as $info)
                                 <div class="card" style="margin-top:20px;">
@@ -271,7 +304,7 @@
                                             @if ($info->apply_number == null)
                                                 0
                                             @else
-                                            {{ $info->apply_number }}
+                                                {{ $info->apply_number }}
                                             @endif
                                         </p>
                                         <a href="{{ url('work_detail_info_page', $info->id) }}"
@@ -280,9 +313,10 @@
                                 </div>
                             @endforeach
                             @php
-                            break;
+                                break;
                             @endphp
                         @endforeach
+                        @endif
                     </div>
                     <!-- Sale & Revenue End -->
                 </div>

@@ -32,6 +32,8 @@ Auth::routes();
 Route::get('/category_register_page', [AdminController::class, 'category_register_page']);
 Route::post('/register_category', [AdminController::class, 'register_category']);
 Route::post('/register_subcategory', [AdminController::class, 'register_subcategory']);
+Route::get('/post_new_page', [AdminController::class, 'post_new_page']);
+Route::post('/admin_news_post', [AdminController::class, 'admin_news_post']);
 
 
 /////////////////////////////////
@@ -63,11 +65,13 @@ Route::get('/work_management_page', [HomeController::class, 'work_management_pag
 Route::get('/contract_list_page', [HomeController::class, 'contract_list_page']);
 Route::post('/work_complete', [HomeController::class, 'work_complete']);
 Route::get('/close_recruit', [HomeController::class, 'close_recruit']);
+Route::get('/select_reputation_star', [HomeController::class, 'select_reputation_star']);
+Route::get('/search_recruit_info', [HomeController::class, 'search_recruit_info']);
 
 
 ////////////////////////////////////////////////////////////////
-///stripテスト
+///strip機能実装
 ////////////////////////////////
-Route::get('/stripe', [StripePaymentController::class, 'paymentStripe'])->name('addmoney.paymentstripe');
-Route::post('/add-money-stripe', [StripePaymentController::class, 'postPaymentStripe'])->name('addmoney.stripe');
+Route::get('/stripe/{id}', [StripePaymentController::class, 'paymentStripe'])->name('addmoney.paymentstripe');
+Route::post('/postPaymentStripe/{id}', [StripePaymentController::class, 'postPaymentStripe']);
 ////////////////////////////////////////////////////////////////

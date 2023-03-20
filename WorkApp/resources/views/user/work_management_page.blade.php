@@ -259,7 +259,11 @@
                                     @else
                                     <button type="button" class="btn btn-light">募集締め切り済み</button>
                                     @endif
-                                    <a href="" class="btn btn-primary">振込みを行う</a>
+                                    @if($info->pay_flg != 1)
+                                    <a href="{{ url('/stripe', $info->rewards) }}/?work_id={{ $info->id }}" class="btn btn-primary">振込みを行う</a>
+                                    @else
+                                    <a href="#" class="btn btn-light">支払い済み</a>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach

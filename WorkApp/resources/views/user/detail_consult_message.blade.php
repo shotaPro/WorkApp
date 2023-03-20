@@ -12,8 +12,12 @@
 
     $category_info = W_category::with(['getSubcategory.category'])->get();
 
-    $applicant_user_info = $job_recruit_info->receiver_person_id;
-    $applicant_user_info = explode(',', $applicant_user_info);
+    if (isset($job_recruit_info->receiver_person_id)) {
+        $applicant_user_info = $job_recruit_info->receiver_person_id;
+        $applicant_user_info = explode(',', $applicant_user_info);
+    } else {
+        $applicant_user_info = null;
+    }
 
 @endphp
 
@@ -41,6 +45,31 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>
+
+    <style>
+        .stars span{
+  display: flex;               /* 要素をフレックスボックスにする */
+  flex-direction: row-reverse; /* 星を逆順に並べる */
+  justify-content: flex-end;   /* 逆順なので、左寄せにする */
+}
+
+.stars input[type='radio']{
+  display: none;               /* デフォルトのラジオボタンを非表示にする */
+}
+
+.stars label{
+  color: #D2D2D2;              /* 未選択の星をグレー色に指定 */
+  font-size: 30px;             /* 星の大きさを30pxに指定 */
+  padding: 0 5px;              /* 左右の余白を5pxに指定 */
+  cursor: pointer;             /* カーソルが上に乗ったときに指の形にする */
+}
+
+.stars label:hover,
+.stars label:hover ~ label,
+.stars input[type='radio']:checked ~ label{
+  color: #F8C601;              /* 選択された星以降をすべて黄色にする */
+}
+    </style>
 </head>
 
 <body>
@@ -206,6 +235,47 @@
         </nav>
         <main class="py-4">
             <div class="container-xxl position-relative bg-white p-0">
+
+                @if ($job_recruit_info != null)
+                    @if ($job_recruit_info->pay_flg == 1)
+                        <div class="text-center">
+                            <a data-bs-toggle="modal" href="#exampleModalToggle" role="button"
+                                class="btn btn-warning">{{ $sender_info->user_name }}さんに評価をつけよう</a>
+                        </div>
+                        <div class="modal fade" id="exampleModalToggle" aria-hidden="true"
+                            aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalToggleLabel">{{ $sender_info->user_name }}さんに評価をつけてください。</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close">X</button>
+                                    </div>
+                                    <form action="{{ url('select_reputation_star') }}" method="GET">
+                                        @csrf
+                                        <div class="modal-body">
+                                            <div class="stars">
+                                            <span>
+                                                <input id="review01" type="radio" name="review"value="5"><label for="review01">★</label>
+                                                <input id="review02" type="radio" name="review"value="4"><label for="review02">★</label>
+                                                <input id="review03" type="radio" name="review"value="3"><label for="review03">★</label>
+                                                <input id="review04" type="radio" name="review"value="2"><label for="review04">★</label>
+                                                <input id="review05" type="radio" name="review"value="1"><label for="review05">★</label>
+                                            </span>
+                                            </div>
+                                            <div>感想:<br><textarea name="reputation_message" type="text"></textarea></div>
+                                            <input name="reputation_to_id" type="hidden" value="{{ $sender_info->user_id }}">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" type="submit">送信する</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+
                 <h1 class="text-center">メッセージ内容</h1>
                 @if (session()->has('message'))
                     <div class="alert alert-success">
@@ -280,18 +350,19 @@
                             </form>
                             {{-- 自分が提示した仕事に対して応募のメッセージがあった場合、以下の仕事依頼確定ボタンを表示 --}}
                             @if ($sender_info->task_id != null)
-                            @if($user_id == $job_recruit_info->order_person_id)
-                                <form action="{{ url('choose_applicant') }}" method="POST">
-                                    @csrf
-                                    <input name="applicant_id" type="hidden" value="{{ $sender_info->sender_id }}">
-                                    <input name="work_id" type="hidden" value="{{ $job_recruit_info->id }}">
-                                    @if(in_array($sender_info->sender_id, $applicant_user_info))
-                                    <a href="#" class="btn btn-light">確定済み</a>
-                                    @else
-                                    <button class="btn btn-warning" type="submit">この人に仕事の依頼を確定する</button>
-                                    @endif
-                                </form>
-                            @endif
+                                @if ($user_id == $job_recruit_info->order_person_id)
+                                    <form action="{{ url('choose_applicant') }}" method="POST">
+                                        @csrf
+                                        <input name="applicant_id" type="hidden"
+                                            value="{{ $sender_info->sender_id }}">
+                                        <input name="work_id" type="hidden" value="{{ $job_recruit_info->id }}">
+                                        @if (in_array($sender_info->sender_id, $applicant_user_info))
+                                            <a href="#" class="btn btn-light">確定済み</a>
+                                        @else
+                                            <button class="btn btn-warning" type="submit">この人に仕事の依頼を確定する</button>
+                                        @endif
+                                    </form>
+                                @endif
                             @endif
                         </div>
 

@@ -17,7 +17,7 @@
                     @if (Session::has('error'))
                         <font color="red">{{ Session::get('error') }}</font>
                     @endif
-                    <form class="form-horizontal" method="post" id="payment-form" role="form" action="{!!route('addmoney.stripe')!!}" >
+                    <form class="form-horizontal" method="post" id="payment-form" role="form" action="{{ url('postPaymentStripe', $price) }}" >
                         @csrf
                         <div class="mb-3">
                             <label class='control-label'>カード番号</label>
@@ -37,10 +37,11 @@
                                 <input class='form-control card-expiry-year' placeholder='YYYY' size='4' type='text' name="ccExpiryYear">
                                 <input class='form-control card-expiry-year' placeholder='YYYY' size='4' type='hidden' name="amount" value="300">
                             </div>
+                            <div><input name="work_id" type="hidden" value="{{ $work_id }}"></div>
                         </div>
 
                         <div class="mb-3" style="padding-top:20px;">
-                            <h5 class='total' >金額:<span class='amount'>5000円</span></h5>
+                            <h5 class='total' >金額:<span class='amount'>{{ number_format($price) }}円</span></h5>
                         </div>
 
                         <div class="mb-3">
